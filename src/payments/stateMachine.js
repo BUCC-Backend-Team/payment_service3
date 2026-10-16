@@ -1,4 +1,4 @@
-// The ONLY place that knows which status changes are allowed.
+
 const PAYMENT = {
   pending: ['succeeded', 'expired'],
   expired: ['succeeded'],                          // a verified late transfer only
@@ -13,10 +13,6 @@ const REFUND = {
   failed: [],
 };
 
-// Which statuses may a payment be in when it moves to `to`?
-// Used in conditional updates:
-//   UPDATE payments SET status = $to WHERE id = $id AND status = ANY($from)
-// If 0 rows change, someone else got there first and we do nothing.
 export const paymentFromStates = (to) =>
   Object.keys(PAYMENT).filter((from) => PAYMENT[from].includes(to));
 

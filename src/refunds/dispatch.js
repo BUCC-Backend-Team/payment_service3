@@ -14,14 +14,6 @@ async function applyProviderStatus(refund, provRefund) {
       WHERE id = $1`, [refund.id, provRefund.id]);
   return { outcome: 'accepted' };
 }
-
-// Send ONE pending refund to Paystack. Safe to call from the request handler and the
-// retry worker at the same time: a conditional UPDATE "claims" the attempt.
-//
-// Recovery after a timeout: Paystack refunds have no idempotency key, so a retry could
-// refund twice. We bump dispatch_attempts BEFORE calling; if it is > 1 on a later try,
-// an earlier call may have succeeded, so we first LIST Paystack's refunds for the
-// transaction and adopt a matching one instead of creating a new one.
 export async function dispatchRefund(refundId) {
   const claim = await pool.query(
     `UPDATE refunds
@@ -52,8 +44,7 @@ export async function dispatchRefund(refundId) {
     return await applyProviderStatus(refund, { id: res.id, status: res.status });
   } catch (err) {
     if (err instanceof ProviderError && !err.retryable) {
-      // Paystack explicitly refused (validation, decline). Nothing exists on their side
-      // and retrying can't help, so fail it and release the reserved amount.
+     
       console.warn(`refund ${refund.id} rejected by Paystack: ${err.message}`);
       return markRefundFailed({ refundId: refund.id });
     }

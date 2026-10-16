@@ -8,8 +8,6 @@ const LEASE_SECONDS = 15;   // a claimed row is hidden this long; if we crash it
 let timer = null;
 let busy = false;
 
-// Claim due rows by pushing their next_attempt_at forward (a short "lease"), so two
-// workers never grab the same row and a crash never loses one.
 async function claimDue() {
   const { rows } = await pool.query(
     `UPDATE callback_outbox

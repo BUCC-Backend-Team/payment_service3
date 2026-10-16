@@ -1,9 +1,5 @@
 import { randomUUID } from 'node:crypto';
 
-// Queue a callback for Marketly. Always call this INSIDE the same transaction as the
-// state change, passing that transaction's `client`. Either both commit or neither does.
-//
-// `payment` is a row from the payments table.
 export async function enqueueCallback(client, type, payment) {
   const id = randomUUID();
   const payload = {

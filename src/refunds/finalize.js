@@ -2,8 +2,6 @@ import { withTx } from '../db/pool.js';
 import { enqueueCallback } from '../callbacks/outbox.js';
 import { paymentFromStates, refundFromStates } from '../payments/stateMachine.js';
 
-// Refund pending -> processed. In ONE transaction: dedupe key, refund status,
-// payment totals/status, callback. Safe against webhook + reconciliation racing.
 export async function markRefundProcessed({ refundId, dedupeKey = null, providerRefundId = null }) {
   return withTx(async (c) => {
     if (dedupeKey) {

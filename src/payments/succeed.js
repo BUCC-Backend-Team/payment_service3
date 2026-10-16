@@ -33,8 +33,7 @@ export async function markPaymentSucceeded({ reference, verified, dedupeKey = nu
         if (seen.rowCount === 0) return { outcome: 'duplicate' };
       }
 
-      // One conditional UPDATE decides everything. The WHERE clause is the state
-      // machine plus the amount check; "late" is true when we are leaving 'expired'.
+  
       const { rows } = await c.query(
         `UPDATE payments
             SET status = 'succeeded',

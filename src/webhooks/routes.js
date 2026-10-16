@@ -45,11 +45,9 @@ async function handleChargeSuccess(event) {
   const reference = data.reference;
   if (!reference) return;
 
-  // Paystack events carry no event ID, so we build one.
   const dedupeKey = `charge.success:${data.id ?? reference}`;
 
-  // Cheap early exit for obvious repeats. The real guarantee is the unique key
-  // inside markPaymentSucceeded's transaction, so this is only a speed-up.
+
   const seen = await pool.query('SELECT 1 FROM processed_events WHERE dedupe_key = $1', [dedupeKey]);
   if (seen.rowCount) return;
 
@@ -70,9 +68,7 @@ async function handleChargeSuccess(event) {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Paystack's refund events don't carry our refund id. Match on Paystack's refund id if we
-// already stored it; otherwise (the event beat our bookkeeping) match the oldest pending
-// refund for that transaction with the same amount.
+
 async function findRefund(data) {
   if (data.id != null) {
     const { rows } = await pool.query('SELECT * FROM refunds WHERE provider_refund_id = $1', [String(data.id)]);

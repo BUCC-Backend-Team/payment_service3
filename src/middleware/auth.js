@@ -3,7 +3,7 @@ import { config } from '../config/index.js';
 
 const expected = Buffer.from(config.merchantApiKey);
 
-// Every route except /health and /webhooks/paystack goes through this.
+
 export function requireApiKey(req, res, next) {
   const match = /^Bearer (.+)$/.exec(req.get('Authorization') ?? '');
   if (match) {

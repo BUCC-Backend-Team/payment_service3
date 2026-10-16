@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import { pool } from '../db/pool.js';
 
-// Same JSON with its keys in a different order must produce the same fingerprint.
 function stable(v) {
   if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
   if (v && typeof v === 'object') {
@@ -13,9 +12,7 @@ function stable(v) {
 export const hashBody = (body) =>
   crypto.createHash('sha256').update(stable(body)).digest('hex');
 
-// Try to claim (scope, key) inside the caller's transaction.
-// The primary key decides the winner. A losing INSERT waits for the winner's
-// transaction to finish, then sees the committed row.
+
 export async function claimKey(client, scope, key, requestHash) {
   const ins = await client.query(
     `INSERT INTO idempotency_keys (scope, key, request_hash)

@@ -2,13 +2,12 @@ import { pool } from '../db/pool.js';
 import { config } from '../config/index.js';
 import { signBody } from './sign.js';
 
-export const MAX_ATTEMPTS = 30;        // after this many failures a callback is marked 'dead'
-const MAX_DELAY_SECONDS = 60;          // backoff is 1s, 2s, 4s, 8s ... capped at this
+export const MAX_ATTEMPTS = 30;        
+const MAX_DELAY_SECONDS = 60;          
 
-// Send ONE outbox row to Marketly and record what happened.
-// `row` is a callback_outbox row. Returns true if Marketly accepted it.
+
 export async function attemptDelivery(row) {
-  // The stored payload is serialised once; the same string is signed AND sent.
+ 
   const body = JSON.stringify(row.payload);
 
   let failure = null;
@@ -17,15 +16,15 @@ export async function attemptDelivery(row) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-MarketlySignature': signBody(body),   // fresh timestamp on every attempt
+        'X-MarketlySignature': signBody(body),   
       },
       body,
       signal: AbortSignal.timeout(10_000),
     });
-    await res.arrayBuffer().catch(() => {});      // free the connection
+    await res.arrayBuffer().catch(() => {});      
     if (res.status < 200 || res.status >= 300) failure = `HTTP ${res.status}`;
   } catch (err) {
-    failure = err.message;                        // timeout, connection refused, DNS...
+    failure = err.message;                        
   }
 
   if (!failure) {
@@ -38,7 +37,7 @@ export async function attemptDelivery(row) {
     return true;
   }
 
-  // Failed: wait 1s, 2s, 4s, ... before the next try (row.attempts counts earlier tries).
+
   const delaySeconds = Math.min(2 ** row.attempts, MAX_DELAY_SECONDS);
   await pool.query(
     `UPDATE callback_outbox

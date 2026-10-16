@@ -35,8 +35,7 @@ async function reconcile(payment) {
     return;
   }
   if (verified && verified.status === 'success') {
-    // A missed webhook (or a late bank transfer). No dedupe key: the conditional UPDATE
-    // is already safe to repeat.
+
     const { outcome } = await markPaymentSucceeded({ reference: payment.id, verified });
     if (outcome === 'mismatch') console.warn(`expiry job: amount mismatch for ${payment.id}`);
     return;
